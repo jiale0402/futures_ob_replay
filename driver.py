@@ -25,4 +25,6 @@ if __name__ == "__main__":
         start="2018-12-01", 
         universe=['648645308']
     )
-    r.compute_day() # this computes one day worth of data
+    days_to_replay = 2
+    for i in range(days_to_replay):
+        r.compute_day() # this computes one day worth of data
