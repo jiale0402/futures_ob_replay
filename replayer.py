@@ -243,15 +243,27 @@ class Replayer:
         l2_schema['Timestamp'] = pl.Datetime
         l1_schema = copy.deepcopy(L1_SCHEMA)
         l1_schema['Timestamp'] = pl.Datetime
-        self.time = datetime.datetime.strptime(date, "%Y-%m-%d")
+        self.time = datetime.datetime.strptime(date, "%Y-%m-%d") - datetime.timedelta(hours=2)
         blank_update = copy.deepcopy(self.blank_update_template)
-        blank_update['Timestamp'] = self.time + datetime.timedelta(hours=22) - self.freq / 2
+        blank_update['Timestamp'] = self.time + datetime.timedelta(days=1) - self.freq / 2
         blank_trade = copy.deepcopy(self.blank_trade_template)
-        blank_trade['Timestamp'] = self.time + datetime.timedelta(hours=22) - self.freq / 2
+        blank_trade['Timestamp'] = self.time + datetime.timedelta(days=1) - self.freq / 2
+        self.curr_data['l2'] = self.curr_data['l2'].set_sorted(
+            'Timestamp',
+            descending=False
+        ).filter(
+            pl.col('Timestamp') <= self.time + datetime.timedelta(days=1) - self.freq / 2
+        )
         self.curr_data['l2'] = pl.concat([
             self.curr_data['l2'],
             pl.DataFrame(blank_update, schema_overrides=l2_schema),
         ])
+        self.curr_data['trades'] = self.curr_data['trades'].set_sorted(
+            'Timestamp',
+            descending=False
+        ).filter(
+            pl.col('Timestamp') <= self.time + datetime.timedelta(days=1) - self.freq / 2
+        )
         self.curr_data['trades'] = pl.concat([
             self.curr_data['trades'],
             pl.DataFrame(blank_trade, schema_overrides=l1_schema),
@@ -264,26 +276,39 @@ class Replayer:
         # insert a blank message to start of trades/l2 data 
         blank_update['Timestamp'] = self.time 
         blank_trade['Timestamp'] = self.time
+        self.curr_data['l2'] = self.curr_data['l2'].set_sorted(
+            'Timestamp',
+            descending=False
+        ).filter(
+            pl.col('Timestamp') >= self.time
+        )
         self.curr_data['l2'] = pl.concat([
             pl.DataFrame(blank_update, schema_overrides=l2_schema),
             self.curr_data['l2'],
         ])
+        self.curr_data['trades'] = self.curr_data['trades'].set_sorted(
+            'Timestamp',
+            descending=False
+        ).filter(
+            pl.col('Timestamp') >= self.time
+        )
         self.curr_data['trades'] = pl.concat([
             pl.DataFrame(blank_trade, schema_overrides=l1_schema),
             self.curr_data['trades'],
         ])
         
+        # sanity check
+        msg = f"l2 and l1 dataframes have different min timestamps: {self.curr_data['l2']['Timestamp'].min()},\
+                {self.curr_data['trades']['Timestamp'].min()}"
+        assert self.curr_data['l2']['Timestamp'].min() == self.curr_data['trades']['Timestamp'].min() == self.time, msg
+        msg = f"l2 and l1 dataframes have different max timestamps: {self.curr_data['l2']['Timestamp'].max()},\
+                {self.curr_data['trades']['Timestamp'].max()}"
+        assert self.curr_data['l2']['Timestamp'].max() == self.curr_data['trades']['Timestamp'].max()\
+                == self.time + datetime.timedelta(hours=24) - self.freq / 2, msg
+        
         # aggregating and upsampling to make the data time uniform
         # each row in the dataframe is a collection of messages that happened in this interval
-        self.curr_data['l2'] = self.curr_data['l2'].filter(
-                pl.col('Code').is_in(self.universe) | pl.col('Code').eq('blank')
-            ).set_sorted(
-                'Timestamp',
-                descending=False
-            ).filter(
-                (pl.col('Timestamp') >= self.time) & 
-                (pl.col('Timestamp') < self.time + datetime.timedelta(days=1))
-            ).group_by_dynamic(
+        self.curr_data['l2'] = self.curr_data['l2'].group_by_dynamic(
                 index_column="Timestamp",
                 every=self.freq,
                 include_boundaries=True,
@@ -310,20 +335,12 @@ class Replayer:
                 pl.col('DeltaRefresh_CumulatedUnits'),
                 pl.col('DeltaRefresh_Level'),
                 pl.col('DeltaRefresh_Price'),
-                pl.col("_upper_boundary").alias("Timestamp"),
+                pl.col('_upper_boundary').alias('Timestamp'),
             ).upsample(
                 time_column="Timestamp",
                 every=self.freq
             )
-        self.curr_data['trades'] = self.curr_data['trades'].filter(
-                (pl.col('Code').is_in(self.universe) | pl.col('Code').eq('blank'))
-            ).set_sorted(
-                'Timestamp', 
-                descending=False
-            ).filter(
-                (pl.col('Timestamp') >= self.time) & 
-                (pl.col('Timestamp') < self.time + datetime.timedelta(days=1))
-            ).group_by_dynamic(
+        self.curr_data['trades'] = self.curr_data['trades'].group_by_dynamic(
                 index_column="Timestamp",
                 every=self.freq,
                 include_boundaries=True,
@@ -346,7 +363,7 @@ class Replayer:
             self.l2_col_mapping = {col: i for i, col in enumerate(self.curr_data['l2'].columns[1:])}
             self.l1_col_mapping = {col: i for i, col in enumerate(self.curr_data['trades'].columns[1:])}
             # the first column is the timestamp, which is not in the schema
-            
+        
         # sanity check
         msg = f"l2 and l1 dataframes have different shapes: {self.curr_data['l2'].shape[0]}, {self.curr_data['trades'].shape[0]}"
         assert self.curr_data['l2'].shape[0] == self.curr_data['trades'].shape[0], msg
