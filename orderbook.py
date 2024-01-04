@@ -89,10 +89,17 @@ class LocalOrderBook:
             self.ask_prices += [None] * (depth - len(self.ask_prices))
             self.ask_volumes += [None] * (depth - len(self.ask_volumes))
     
+    def BidOverwriteLevel(self, price, qty, level):
+        self.bid_prices[level] = price
+        self.bid_volumes[level] = qty
+
+    def AskOverwriteLevel(self, price, qty, level):
+        self.ask_prices[level] = price
+        self.ask_volumes[level] = qty
+
     def __repr__(self) -> str:
         return f"Instrument Code: {self.code}" +\
                f"\nbid prices: {self.bid_prices}" +\
                f"\nbid volumes: {self.bid_volumes}" +\
                f"\nask prices: {self.ask_prices}" +\
                f"\nask volumes: {self.ask_volumes}"
-            
