@@ -397,18 +397,14 @@ class Replayer:
     
     def _insert_to_start(self, blank_update, blank_trade, l2_schema, l1_schema):
         # insert a blank message to start of trades/l2 data 
-        blank_update['Timestamp'] = self.time 
-        blank_trade['Timestamp'] = self.time
         self.curr_data['l2'] = self.curr_data['l2'].set_sorted(
             column='Timestamp',
             descending=False
         ).filter(
             pl.col('Timestamp') >= self.time
         )
-        for code in self.universe:
-            blank_update['Code'] = code
-            blank_trade['Code'] = code
-                
+        blank_update['Timestamp'] = [self.time] * len(self.universe)
+        blank_trade['Timestamp'] = [self.time] * len(self.universe)
         self.curr_data['l2'] = pl.concat([
             pl.DataFrame(blank_update, schema_overrides=l2_schema),
             self.curr_data['l2'],
@@ -431,6 +427,8 @@ class Replayer:
         if self.universe == []:
             self.universe = self.curr_data['l2']['Code'].unique().to_list()
             self.universe = [code for code in self.universe if code != 'blank']
+            self.blank_update_template['Code'] = copy.deepcopy(self.universe)
+            self.blank_trade_template['Code'] = copy.deepcopy(self.universe)
         self.ob_container = {code: LocalOrderBook(code) for code in self.universe}
         self.trade_handler_container = {code: TradesHandler(code, self.freq) for code in self.universe}
         self.time = datetime.datetime.strptime(self.date, "%Y-%m-%d") - datetime.timedelta(hours=2)
