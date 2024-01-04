@@ -172,10 +172,8 @@ class Replayer:
         self.dest = dest
         self.buffer_size = buffer_size
         os.makedirs(self.dest, exist_ok=True)
-        self.blank_update_template = {k: None for k in L2_SCHEMA.keys()}
-        self.blank_trade_template = {k: None for k in L1_SCHEMA.keys()}
-        self.blank_trade_template['Code'] = 'blank'
-        self.blank_update_template['Code'] = 'blank'
+        self.blank_update_template = {k:[] for k in L2_SCHEMA.keys()}
+        self.blank_trade_template = {k:[] for k in L1_SCHEMA.keys()}
         self.max_workers = max_workers
         
     def compute_day(self):
@@ -380,21 +378,18 @@ class Replayer:
             pl.col('Timestamp') < self.time + datetime.timedelta(days=1)
         )
         eod_time = [self.time + datetime.timedelta(days=1) - self.freq/2]
-        blank_trade['Timestamp'] = eod_time
-        blank_update['Timestamp'] = eod_time
-        for code in self.universe:
-            blank_update['Code'] = code
-            self.curr_data['l2'] = pl.concat([
-                self.curr_data['l2'],
-                pl.DataFrame(blank_update, schema_overrides=l2_schema),
+        blank_trade['Timestamp'] = [eod_time] * len(self.universe)
+        blank_update['Timestamp'] = [eod_time] * len(self.universe)
+        self.curr_data['trades'] = pl.concat([
+                self.curr_data['trades'],
+                pl.DataFrame(blank_trade, schema_overrides=l1_schema),
             ]).set_sorted(
                 column='Timestamp',
                 descending=False
             )
-            blank_trade['Code'] = code
-            self.curr_data['trades'] = pl.concat([
-                self.curr_data['trades'],
-                pl.DataFrame(blank_trade, schema_overrides=l1_schema),
+        self.curr_data['l2'] = pl.concat([
+                self.curr_data['l2'],
+                pl.DataFrame(blank_update, schema_overrides=l2_schema),
             ]).set_sorted(
                 column='Timestamp',
                 descending=False
@@ -412,21 +407,22 @@ class Replayer:
         )
         for code in self.universe:
             blank_update['Code'] = code
-            self.curr_data['l2'] = pl.concat([
-                pl.DataFrame(blank_update, schema_overrides=l2_schema),
-                self.curr_data['l2'],
-            ]).set_sorted(
-                column='Timestamp',
-                descending=False
-            )
             blank_trade['Code'] = code
-            self.curr_data['trades'] = pl.concat([
-                pl.DataFrame(blank_trade, schema_overrides=l1_schema),
-                self.curr_data['trades'],
-            ]).set_sorted(
-                column='Timestamp',
-                descending=False
-            )    
+                
+        self.curr_data['l2'] = pl.concat([
+            pl.DataFrame(blank_update, schema_overrides=l2_schema),
+            self.curr_data['l2'],
+        ]).set_sorted(
+            column='Timestamp',
+            descending=False
+        )    
+        self.curr_data['trades'] = pl.concat([
+            pl.DataFrame(blank_trade, schema_overrides=l1_schema),
+            self.curr_data['trades'],
+        ]).set_sorted(
+            column='Timestamp',
+            descending=False
+        )    
         
     def __repr__(self) -> str:
         return f"Replayer({self.dir}, {self.eid}, {self.freq})"
