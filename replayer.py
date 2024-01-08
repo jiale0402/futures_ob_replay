@@ -59,6 +59,10 @@ class Replayer:
         self.max_workers = max_workers
         self.features_handler = FeaturesHandler(features=features)
 
+    def close(self):
+        for dest in self.dest_file_streams.values():
+            dest.close()
+
     def compute_day(self):
         """
         computes one day worth of features and write to destination
@@ -75,21 +79,21 @@ class Replayer:
                     self.l1_col_mapping,
                     self.ob_container[code],
                     self.trade_handler_container[code],
-                    self.dest_file_streams[code],
-                    self.buffer_size
                 )]
 
-            outputs = {}
-            # catch exceptions & print progress
-            for i, future in enumerate(as_completed(rs)):
-                try:
-                    outputs[self.universe[i]] = future.result()
-                    print(f"Finished {self.universe[i] + ' ' + self.date}")
-                except Exception as exc:
-                    print(exc)
+        outputs = {}
+        # catch exceptions & print progress
+        for i, future in enumerate(as_completed(rs)):
+            try:
+                outputs[self.universe[i]], timestamp = future.result()
+                print(f"Finished {self.universe[i] + ' ' + self.date}")
+            except Exception as exc:
+                print(exc)
 
-            features = self.features_handler.compute(outputs)
-            #TODO write to the files
+        features = self.features_handler.compute(outputs)
+        for symbol, symbol_features in features.items():
+            dest = self.dest_file_streams[symbol]
+            dest.write(f"{(outputs[symbol] + symbol_features)}[1:-1], {timestamp}\n")
 
     def _read_next_date(self) -> None:
         # read next date's data
@@ -322,15 +326,18 @@ class Replayer:
         self.ob_container = {code: LocalOrderBook(code) for code in self.universe}
         self.trade_handler_container = {code: TradesHandler(code, self.freq) for code in self.universe}
         self.time = datetime.datetime.strptime(self.date, "%Y-%m-%d") - datetime.timedelta(hours=2)
-        self.dest_file_streams = {code: os.path.join(self.dest, f"{code}.csv") for code in self.universe}
+        self.dest_file_streams = {
+            code: open(os.path.join(self.dest, f"{code}.csv"), "w+", buffering=self.buffer_size)
+            for code in self.universe
+        }
+        print(self.dest_file_streams.keys())
         features = [f'bid_price_{i}' for i in range(10)] + [f'bid_qty_{i}' for i in range(10)] +\
                    [f'ask_price_{i}' for i in range(10)] + [f'ask_qty_{i}' for i in range(10)] +\
                    ['open', 'high', 'low', 'close', 'volume', 'amount', 'timestamp'] +\
                    self.features_handler.names
         features = ', '.join(features)
         for dest in self.dest_file_streams.values():
-            with open(dest, 'w+') as dest:
-                dest.write(f"{features}\n")
+            dest.write(f"{features}\n")
 
     def list_dates(self, dir) -> list:
         assert os.path.isdir(dir), f"{dir} is not a directory"
