@@ -2,11 +2,12 @@ from feature import Feature
 
 class MidPrice(Feature):
 
-    def __init__():
+    def __init__(self, **kwargs):
         self.lookback = 0
         self.name = "MidPrice"
+        self.written = kwargs['written']
 
-    def compute(**kwargs):
+    def compute(self, **kwargs):
         snapshot = kwargs['snapshot']
         # infer the index of bid1 and ask1 from shape of snapshot
         ob_depth = int(snapshot.shape[0] / 4)
