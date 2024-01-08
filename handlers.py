@@ -15,10 +15,7 @@ def _compute_day(
         l1_col_mapping: dict,
         ob_handler: LocalOrderBook,
         trade_handler: TradesHandler,
-        dest: str,
-        buffer_size: int = 2**20,
     ) -> None:
-    dest = open(dest, 'a', buffering=buffer_size)
     # replay loop
     for (l2_updates, trades) in zip(l2.iter_rows(named = True), l1.iter_rows(named = True)):
         # assure time is uniform
@@ -40,9 +37,8 @@ def _compute_day(
         # record the features
         data = ob_handler.take_snapshot()
         data += trade_handler.get_ohlcva()
-        dest.write(f"{str(data)[1:-1]}, {timestamp}\n")
-    dest.close()
-    return data
+    return data, timestamp
+
 def handle_trades(row, l1_col_mapping, trades_handler) -> None: # message handler wrapper
     price = row[l1_col_mapping['TradeEvent_LastPrice']]
     qty = row[l1_col_mapping['TradeEvent_LastTradeQuantity']]
