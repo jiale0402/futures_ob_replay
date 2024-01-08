@@ -28,13 +28,14 @@ if __name__ == "__main__":
         
     """
     r = Replayer(
-        "/mnt/ssd1/future/quanthouse/one-mon/cme", 
-        eid="1027", 
-        dest="/mnt/ssd1/jctemp/dest", 
-        frequency=datetime.timedelta(microseconds=100000), # 0.1s
-        start="2018-12-03", 
-        universe=['648645308']
+        "/storage/quanthouse/one-mon/cme",
+        eid="1027",
+        dest="~/temp",
+        frequency=datetime.timedelta(seconds=1),
+        start="2018-12-01",
+        max_workers=100,
+        universe=["648646240", "648469957", "648470037"]
     )
-    days_to_replay = 1
+    days_to_replay = 29
     for i in range(days_to_replay):
         r.compute_day() # this computes one day worth of data
