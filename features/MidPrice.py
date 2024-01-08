@@ -1,4 +1,4 @@
-from feature import Feature
+from .feature import Feature
 
 class MidPrice(Feature):
 
