@@ -12,7 +12,7 @@ class FeaturesHandler:
         self.cached_history = np.zeros((10, 10))
         self.ob_depth = ob_depth
         self.names = [f.name for f in features]
-        self.mask = np.array([f.written for f in features])
+        self.mask = np.array([f.write for f in features])
 
     def compute(
         self,
