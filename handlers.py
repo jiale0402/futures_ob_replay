@@ -42,8 +42,7 @@ def _compute_day(
         data += trade_handler.get_ohlcva()
         dest.write(f"{str(data)[1:-1]}, {timestamp}\n")
     dest.close()
-    return data + [timestamp]
-
+    return data
 def handle_trades(row, l1_col_mapping, trades_handler) -> None: # message handler wrapper
     price = row[l1_col_mapping['TradeEvent_LastPrice']]
     qty = row[l1_col_mapping['TradeEvent_LastTradeQuantity']]
