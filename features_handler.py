@@ -27,6 +27,6 @@ class FeaturesHandler:
             computed_features = []
             for i, feature in enumerate(self.features):
                 lookback = self.cached_history[:, i]
-                computed_features += [feature.compute(snapshot, ohlcva, lookback)]
-            result[symbol] = np.array(computed_features)[self.mask]
+                computed_features += [feature.compute(snapshot=snapshot, ohlcva=ohlcva, lookback=lookback)]
+            result[symbol] = np.array(computed_features)[self.mask].tolist()
         return result
