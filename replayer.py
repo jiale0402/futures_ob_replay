@@ -57,7 +57,7 @@ class Replayer:
         self.blank_update_template = {k:[] for k in L2_SCHEMA.keys()}
         self.blank_trade_template = {k:[] for k in L1_SCHEMA.keys()}
         self.max_workers = max_workers
-        self.features_handler = FeaturesHandler()
+        self.features_handler = FeaturesHandler(features=features)
 
     def compute_day(self):
         """
@@ -88,8 +88,8 @@ class Replayer:
                 except Exception as exc:
                     print(exc)
 
-            print(outputs)
-            import pdb; pdb.set_trace()
+            features = self.features_handler.compute(outputs)
+            #TODO write to the files
 
     def _read_next_date(self) -> None:
         # read next date's data
