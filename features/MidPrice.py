@@ -5,7 +5,7 @@ class MidPrice(Feature):
     def __init__(self, **kwargs):
         self.lookback = 0
         self.name = "MidPrice"
-        self.written = kwargs['written']
+        self.write = kwargs['write']
 
     def compute(self, **kwargs):
         snapshot = kwargs['snapshot']
