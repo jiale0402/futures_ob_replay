@@ -28,7 +28,7 @@ if __name__ == "__main__":
         
     """
     r = Replayer(
-        "/storage/quanthouse/one-mon/cme",, 
+        "/storage/quanthouse/one-mon/cme",
         eid="1027", 
         dest="/storage/dest",
         frequency=datetime.timedelta(microseconds=100000), # 0.1s
