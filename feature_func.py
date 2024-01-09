@@ -50,7 +50,7 @@ def voi(data, prev_data):
         else:
             delta_ask[i] = data[30 + i] - prev_data[30 + i]
         
-        delat_bid[i] = delat_bid[i] * arr[i]
+        delta_bid[i] = delta_bid[i] * arr[i]
         delta_ask[i] = delta_ask[i] * arr[i]
     
     delta_bid = np.cumsum(delta_bid)
