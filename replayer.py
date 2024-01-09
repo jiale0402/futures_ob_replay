@@ -200,6 +200,8 @@ class Replayer:
                     self.l1_col_mapping,
                     self.ob_container[code],
                     self.trade_handler_container[code],
+                    self.dest_file_stream,
+                    self.buffer_size,
                 )]
 
         outputs = {}
@@ -443,7 +445,7 @@ class Replayer:
         self.trade_handler_container = {code: TradesHandler(code, self.freq) for code in self.universe}
         self.time = datetime.datetime.strptime(self.date, "%Y-%m-%d") - datetime.timedelta(hours=2)
         self.dest_file_streams = {
-            code: open(os.path.join(self.dest, f"{code}.csv"), "w+", buffering=self.buffer_size)
+            code: os.path.join(self.dest, f"{code}.csv"), "w+")
             for code in self.universe
         }
         print(self.dest_file_streams.keys())
