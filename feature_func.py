@@ -22,7 +22,7 @@ def mpb(data, prev_data):
     prev_midp = (prev_bid_1 + prev_ask_1) / 2
     mt = (midp + prev_midp) / 2
     ohlcva = data[-6:]
-    vwap = ohlcva[-1] / ohlcva[-2]
+    vwap = ohlcva[-1] / ohlcva[-2] if ohlcva[-2] > 0 else np.nan
     return vwap - mt
 
 def voi(data, prev_data):
