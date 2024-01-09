@@ -1,7 +1,6 @@
 import numpy as np 
 
 all_features = ['oir', 'mpb', 'voi']
-all_feature_funcs = [oir, mpb, voi]
 levels = 5
 arr = np.array([1, 0.8, 0.6, 0.4, 0.2])
 sum_arr = arr.sum()
@@ -58,3 +57,6 @@ def voi(data, prev_data):
     delta_ask = np.cumsum(delta_ask)
     
     return ((delta_bid - delta_ask) / cum_sum_arr).sum()
+
+all_feature_funcs = [oir, mpb, voi]
+
