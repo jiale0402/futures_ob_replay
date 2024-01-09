@@ -28,9 +28,9 @@ if __name__ == "__main__":
         
     """
     r = Replayer(
-        "/mnt/ssd1/future/quanthouse/one-mon/cme", 
+        "/storage/quanthouse/one-mon/cme",, 
         eid="1027", 
-        dest="/mnt/ssd1/jctemp/dest", 
+        dest="/storage/dest",
         frequency=datetime.timedelta(microseconds=100000), # 0.1s
         start="2018-12-03", 
         universe=['648645308']
