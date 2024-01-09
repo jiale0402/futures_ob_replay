@@ -445,7 +445,7 @@ class Replayer:
         self.trade_handler_container = {code: TradesHandler(code, self.freq) for code in self.universe}
         self.time = datetime.datetime.strptime(self.date, "%Y-%m-%d") - datetime.timedelta(hours=2)
         self.dest_file_streams = {
-            code: os.path.join(self.dest, f"{code}.csv"), "w+")
+            code: os.path.join(self.dest, f"{code}.csv")
             for code in self.universe
         }
         print(self.dest_file_streams.keys())
