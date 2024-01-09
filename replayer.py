@@ -48,6 +48,8 @@ def _compute_day(
         dest.write(f"{str(data)[1:-1]}, {timestamp}\n")
         prev_data = data
         
+        print(trade_handler.vwap)
+        
     dest.close()
     return data
             
