@@ -455,7 +455,8 @@ class Replayer:
                    all_features + ['timestamp']
         features = ', '.join(features)
         for dest in self.dest_file_streams.values():
-            dest.write(f"{features}\n")
+            with open(dest, 'w+') as dest:
+                dest.write(f"{features}\n")
 
     def list_dates(self, dir) -> list:
         assert os.path.isdir(dir), f"{dir} is not a directory"
