@@ -32,7 +32,7 @@ if __name__ == "__main__":
         eid="1027", 
         dest="/storage/dest",
         frequency=datetime.timedelta(microseconds=100000), # 0.1s
-        start="2018-12-03", 
+        start="2018-12-01", 
         universe=['648645308']
     )
     days_to_replay = 1
