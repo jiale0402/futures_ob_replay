@@ -21,10 +21,11 @@ def _compute_day(
         trade_handler: TradesHandler, 
         dest: str,
         buffer_size: int = 2**20,
+        last = None
     ) -> None:    
     dest = open(dest, 'a', buffering=buffer_size) 
     # replay loop
-    prev_data = None
+    prev_data = last
     for (l2_updates, trades) in zip(l2.iter_rows(named = True), l1.iter_rows(named = True)):
         # assure time is uniform
         timestamp = l2_updates.pop('Timestamp')
@@ -38,8 +39,6 @@ def _compute_day(
         # process trades 
         if trades['Code'] is not None:
             for row in zip(*trades.values()):
-                if row[l1_col_mapping['Code']] == 'blank':
-                    continue
                 handle_trades(row, l1_col_mapping, trade_handler)
         
         # record the features
@@ -50,6 +49,7 @@ def _compute_day(
         prev_data = data
         
     dest.close()
+    return data
             
 def handle_trades(row, l1_col_mapping, trades_handler) -> None: # message handler wrapper
     price = row[l1_col_mapping['TradeEvent_LastPrice']]
@@ -179,6 +179,7 @@ class Replayer:
         self.blank_update_template = {k:[] for k in L2_SCHEMA.keys()}
         self.blank_trade_template = {k:[] for k in L1_SCHEMA.keys()}
         self.max_workers = max_workers
+        self.last_data = []
 
     def close(self):
         for dest in self.dest_file_streams.values():
@@ -191,7 +192,7 @@ class Replayer:
         self._read_next_date()
         with ProcessPoolExecutor(max_workers=self.max_workers) as pool:
             rs = []
-            for code in self.universe:
+            for last, code in zip(self.last_data, self.universe):
                 rs += [pool.submit(
                     _compute_day,
                     self.curr_data['l2'][code],
@@ -200,15 +201,16 @@ class Replayer:
                     self.l1_col_mapping,
                     self.ob_container[code],
                     self.trade_handler_container[code],
-                    self.dest_file_stream,
+                    self.dest_file_streams[code],
                     self.buffer_size,
+                    last
                 )]
 
-        outputs = {}
+        self.last_data = []
         # catch exceptions & print progress
         for i, future in enumerate(as_completed(rs)):
             try:
-                outputs[self.universe[i]], timestamp = future.result()
+                self.last_data += [future.result()]
                 print(f"Finished {self.universe[i] + ' ' + self.date}")
             except Exception as exc:
                 print(exc)
@@ -433,6 +435,7 @@ class Replayer:
         if self.universe == []:
             self.universe = self.curr_data['l2']['Code'].unique().to_list()
             self.universe = [code for code in self.universe if code != 'blank']
+        self.last_data = [None] * len(self.universe)
         self.blank_update_template['Code'] = copy.deepcopy(self.universe)
         self.blank_trade_template['Code'] = copy.deepcopy(self.universe)
         for key in self.blank_trade_template.keys():
