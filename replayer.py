@@ -44,7 +44,7 @@ def _compute_day(
         # record the features
         data = ob_handler.take_snapshot()
         data += trade_handler.get_ohlcva()
-        data += [f(data, prev_data) for f in all_feature_funcs]
+        data += [f(data, prev_data, trade_handler.vwap) for f in all_feature_funcs]
         dest.write(f"{str(data)[1:-1]}, {timestamp}\n")
         prev_data = data
         

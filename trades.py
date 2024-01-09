@@ -14,6 +14,7 @@ class TradesHandler:
         self.prev_high = None
         self.prev_low = None
         self.prev_close = None
+        self.vwap = None
         
     def handle_trades(self, price, qty):
         if price is None: return
@@ -33,6 +34,8 @@ class TradesHandler:
             self.prev_close = self.recent_trade_prices[-1]
             volume = sum(self.recent_trade_volumes)
             amount = sum([p * v for p, v in zip(self.recent_trade_prices, self.recent_trade_volumes)])
+            if volume != 0: # update vwap
+                self.prev_vwap = amount / volume
             self.recent_trade_prices = []
             self.recent_trade_volumes = []
             return self.prev_open, self.prev_high, self.prev_low, self.prev_close, volume, amount

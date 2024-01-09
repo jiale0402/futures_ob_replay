@@ -6,7 +6,7 @@ arr = np.array([1, 0.8, 0.6, 0.4, 0.2])
 sum_arr = arr.sum()
 cum_sum_arr = np.cumsum(arr)
 
-def oir(data, prev_data):
+def oir(data, prev_data, vwap):
     if prev_data is None: return None
     bid_volumes = np.array(data[10:15])
     ask_volumes = np.array(data[30:35])
@@ -14,18 +14,15 @@ def oir(data, prev_data):
     ask_volumes = np.cumsum(ask_volumes * arr)
     return ((bid_volumes - ask_volumes) / (bid_volumes + ask_volumes)).sum()
 
-def mpb(data, prev_data):
+def mpb(data, prev_data, vwap):
     if prev_data is None: return None
     bid_1, ask_1 = data[0], data[20]
     midp = (bid_1 + ask_1) / 2
     prev_bid_1, prev_ask_1 = prev_data[0], prev_data[20]
     prev_midp = (prev_bid_1 + prev_ask_1) / 2
-    mt = (midp + prev_midp) / 2
-    ohlcva = data[-6:]
-    vwap = ohlcva[-1] / ohlcva[-2] if ohlcva[-2] > 0 else np.nan
-    return vwap - mt
+    return vwap - (midp + prev_midp) / 2
 
-def voi(data, prev_data):
+def voi(data, prev_data, vwap):
     if prev_data is None: return None
     delta_bid = np.zeros(levels)
     delta_ask = np.zeros(levels)
