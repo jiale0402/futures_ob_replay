@@ -37,6 +37,7 @@ class TradesHandler:
             volume = sum(self.recent_trade_volumes)
             amount = sum([p * v for p, v in zip(self.recent_trade_prices, self.recent_trade_volumes)])
             if volume != 0: # update vwap
+                print(f"None zero: {volume}")
                 self.prev_vwap = amount / volume
             self.recent_trade_prices = []
             self.recent_trade_volumes = []

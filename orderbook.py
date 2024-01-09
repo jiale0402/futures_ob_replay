@@ -105,4 +105,4 @@ class LocalOrderBook:
                f"\nbid prices: {self.bid_prices}" +\
                f"\nbid volumes: {self.bid_volumes}" +\
                f"\nask prices: {self.ask_prices}" +\
-               f"\nask volumes: {self.ask_volumes}"
+               f"\nask volumes: {self.ask_volumes}"(base) 

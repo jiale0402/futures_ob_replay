@@ -56,4 +56,3 @@ def voi(data, prev_data, vwap):
     return ((delta_bid - delta_ask) / cum_sum_arr).sum()
 
 all_feature_funcs = [oir, mpb, voi]
-

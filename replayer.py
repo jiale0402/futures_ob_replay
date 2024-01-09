@@ -48,8 +48,6 @@ def _compute_day(
         dest.write(f"{str(data)[1:-1]}, {timestamp}\n")
         prev_data = data
         
-        print(trade_handler.vwap)
-        
     dest.close()
     return data
             
@@ -95,20 +93,20 @@ def handle_OverlapRefresh(row, ob, l2_col_mapping):
     if bid_limits is not None: # load bid limits (snapshot)
         if ob.bid_prices[0] is None:
             bid_start_level = 0
-        if bid_is_full:
-            ob.BidClearFromLevel(0)
         bid_limits = json.loads(f"[{bid_limits}]".replace('][', '],['))
         for i in range(len(bid_limits)):
             ob.BidOverwriteLevel(bid_limits[i][0], bid_limits[i][1], bid_start_level+i)
+        if bid_is_full:
+            ob.BidClearFromLevel(i+1)
     if ask_limits is not None: # load ask limits (snapshot)
         if ob.ask_prices[0] is None:
             ask_start_level = 0
-        if ask_is_full:
-            ob.AskClearFromLevel(0)
         ask_limits = json.loads(f"[{ask_limits}]".replace('][', '],['))
         for i in range(len(ask_limits)):
             ob.AskOverwriteLevel(ask_limits[i][0], ask_limits[i][1], ask_start_level+i)
-                
+        if ask_is_full:
+            ob.AskClearFromLevel(i+1)
+
 def handle_DeltaRefresh(row, ob, l2_col_mapping):
     # process a delta update
     action = row[l2_col_mapping['DeltaRefresh_DeltaAction']]
