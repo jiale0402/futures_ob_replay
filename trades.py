@@ -1,3 +1,5 @@
+import numpy as np 
+
 class TradesHandler:
     
     """
@@ -14,7 +16,7 @@ class TradesHandler:
         self.prev_high = None
         self.prev_low = None
         self.prev_close = None
-        self.vwap = None
+        self.vwap = np.nan
         
     def handle_trades(self, price, qty):
         if price is None: return
