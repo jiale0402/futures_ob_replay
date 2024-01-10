@@ -25,7 +25,7 @@ def mpb(**kwargs):
     prev_midp = (prev_data[0] + prev_data[20]) / 2
     return vwap - (midp + prev_midp) / 2
 
-def voi(data, prev_data, vwap):
+def voi(**kwargs):
     prev_data = kwargs['prev_data']
     data = kwargs['data']
     if prev_data is None: return np.nan
