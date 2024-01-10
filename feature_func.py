@@ -6,23 +6,28 @@ arr = np.array([1, 0.8, 0.6, 0.4, 0.2])
 sum_arr = arr.sum()
 cum_sum_arr = np.cumsum(arr)
 
-def oir(data, prev_data, vwap):
+def oir(**kwargs):
+    prev_data = kwargs['prev_data']
+    data = kwargs['data']
     if prev_data is None: return np.nan
     bid_volumes = np.array(data[10:15])
     ask_volumes = np.array(data[30:35])
-    bid_volumes = np.cumsum(bid_volumes * arr)
-    ask_volumes = np.cumsum(ask_volumes * arr)
-    return ((bid_volumes - ask_volumes) / (bid_volumes + ask_volumes)).sum()
+    vb = (bid_volumes * arr).sum() / sum_arr
+    va = (ask_volumes * arr).sum() / sum_arr
+    return (vb - va) / (vb + va)
 
-def mpb(data, prev_data, vwap):
+def mpb(**kwargs):
+    prev_data = kwargs['prev_data']
     if prev_data is None: return np.nan
-    bid_1, ask_1 = data[0], data[20]
-    midp = (bid_1 + ask_1) / 2
-    prev_bid_1, prev_ask_1 = prev_data[0], prev_data[20]
-    prev_midp = (prev_bid_1 + prev_ask_1) / 2
+    data = kwargs['data']
+    vwap = kwargs['vwap']
+    midp = (data[0] + data[20]) / 2
+    prev_midp = (prev_data[0] + prev_data[20]) / 2
     return vwap - (midp + prev_midp) / 2
 
 def voi(data, prev_data, vwap):
+    prev_data = kwargs['prev_data']
+    data = kwargs['data']
     if prev_data is None: return np.nan
     delta_bid = np.zeros(levels)
     delta_ask = np.zeros(levels)

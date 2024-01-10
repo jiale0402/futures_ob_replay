@@ -44,7 +44,11 @@ def _compute_day(
         # record the features
         data = ob_handler.take_snapshot()
         data += trade_handler.get_ohlcva()
-        data += [f(data, prev_data, trade_handler.vwap) for f in all_feature_funcs]
+        data += [f(
+                    data=data, 
+                    prev_data=prev_data, 
+                    vwap=trade_handler.vwap
+                ) for f in all_feature_funcs]
         dest.write(f"{str(data)[1:-1]}, {timestamp}\n")
         prev_data = data
         
@@ -211,7 +215,7 @@ class Replayer:
         for i, future in enumerate(as_completed(rs)):
             try:
                 self.last_data += [future.result()]
-                print(f"Finished {self.universe[i] + ' ' + self.date}")
+                print(f"finished {self.universe[i] + ' ' + self.date}")
             except Exception as exc:
                 print(exc)
 
@@ -451,7 +455,7 @@ class Replayer:
             code: os.path.join(self.dest, f"{code}.csv")
             for code in self.universe
         }
-        print(self.dest_file_streams.keys())
+        print(f"universe: {list(self.dest_file_streams.keys())}")
         features = [f'bid_price_{i}' for i in range(10)] + [f'bid_qty_{i}' for i in range(10)] +\
                    [f'ask_price_{i}' for i in range(10)] + [f'ask_qty_{i}' for i in range(10)] +\
                    ['open', 'high', 'low', 'close', 'volume', 'amount'] +\
