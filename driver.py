@@ -32,9 +32,9 @@ if __name__ == "__main__":
         eid="1027", 
         dest="/storage/dest",
         frequency=datetime.timedelta(seconds=1), # 0.1s
-        start="2018-12-01", 
+        start="2018-12-03", 
         universe=['648438910']
     )
-    days_to_replay = 20
+    days_to_replay = 17
     for i in range(days_to_replay):
         r.compute_day() # this computes one day worth of data
