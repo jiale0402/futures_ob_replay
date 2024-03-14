@@ -2,7 +2,7 @@ import os
 import io
 import gzip
 import datetime
-import polars as pl 
+import polars as pl
 import orjson as json
 from data_schema import L2_SCHEMA, L1_SCHEMA
 from orderbook import LocalOrderBook
@@ -167,6 +167,7 @@ class Replayer:
         universe:       list, string codes of all instruments, if None, will be inferred from data
         buffer_size:    int, buffer size of the output file streams
         max_workers:    int, number of processes to use for parallel processing
+        features:       list, feature classes to be computed along with snapshots and ohlcva
         """
         self.start = start
         self.time = None

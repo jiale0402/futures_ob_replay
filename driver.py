@@ -1,11 +1,12 @@
 from replayer import Replayer
+from features.MidPrice import MidPrice
 import datetime
 
 if __name__ == "__main__":
-    """ 
-    
+    """
+
         Replayer: main thread of the feature generation process
-        
+
         Params:
         -------
         path:           str, absolute path to the directory containing the data
@@ -21,12 +22,16 @@ if __name__ == "__main__":
         One csv file (in the destination directory) for each specified symbol in the universe with the following columns:
         bid_price_0 ... bid_price_9
         bid_qty_0   ... bid_qty_9
-        ask_price_0 ... ask_price_9 
+        ask_price_0 ... ask_price_9
         ask_qty_0   ... ask_qty_9
         open, high, low, close, volue, amount
+
+        ** any user specified feature **
+
         timestamp
-        
+
     """
+    midprice = MidPrice(write=True)
     r = Replayer(
         "/storage/quanthouse/one-mon/cme",
         eid="1027", 
@@ -38,3 +43,4 @@ if __name__ == "__main__":
     days_to_replay = 17
     for i in range(days_to_replay):
         r.compute_day() # this computes one day worth of data
+    r.close()
