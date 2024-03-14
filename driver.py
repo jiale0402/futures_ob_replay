@@ -34,16 +34,13 @@ if __name__ == "__main__":
     midprice = MidPrice(write=True)
     r = Replayer(
         "/storage/quanthouse/one-mon/cme",
-        eid="1027",
+        eid="1027", 
         dest="/storage/dest",
-        frequency=datetime.timedelta(seconds=1),
-        start="2018-12-01",
-        max_workers=100,
-        universe=["648646240", "648469957", "648470037"],
-        features=[midprice]
+        frequency=datetime.timedelta(seconds=1), # 0.1s
+        start="2018-12-03", 
+        universe=['648438910']
     )
-    print(r.dest)
-    days_to_replay = 2
+    days_to_replay = 17
     for i in range(days_to_replay):
         r.compute_day() # this computes one day worth of data
     r.close()
