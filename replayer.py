@@ -10,6 +10,7 @@ import copy
 from trades import TradesHandler
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from feature_func import all_feature_funcs, all_features
+from handlers import _compute_day
         
 # separated from class to allow for parallel processing
 def _compute_day(
