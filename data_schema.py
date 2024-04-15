@@ -2,7 +2,7 @@ import polars as pl
 
 L2_SCHEMA = {
     "Code": pl.Utf8,
-    "LayerId": pl.Float32,
+    "LayerId": pl.Utf8,
     "DeltaRefresh_ServerTimestamp": pl.Utf8,
     "DeltaRefresh_MarketTimestamp": pl.Utf8,
     "DeltaRefresh_DeltaAction": pl.Utf8,

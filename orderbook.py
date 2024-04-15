@@ -14,17 +14,6 @@ class LocalOrderBook:
         self.ask_prices = [np.nan] * initial_levels # best ask at index 0
         self.ask_volumes = [np.nan] * initial_levels
 
-    def take_snapshot(self, levels=10, mode = 'list'):
-        if mode == 'dict':
-            snapshot = {}
-            snapshot['bid_prices'] = self.bid_prices[:levels]
-            snapshot['bid_volumes'] = self.bid_volumes[:levels]
-            snapshot['ask_price'] = self.ask_prices[:levels]
-            snapshot['ask_volumes'] = self.ask_volumes[:levels]
-        else:
-            snapshot = self.bid_prices[:levels] + self.bid_volumes[:levels] + self.ask_prices[:levels] + self.ask_volumes[:levels]
-        return snapshot
-
     def BidChangeQtyAtLevel(self, level, qty):
         self.bid_volumes[level] = qty
 
@@ -100,6 +89,17 @@ class LocalOrderBook:
     def AskOverwriteLevel(self, price, qty, level):
         self.ask_prices[level] = price
         self.ask_volumes[level] = qty
+        
+    def take_snapshot(self, levels=10, mode = 'list'):
+        if mode == 'dict':
+            snapshot = {}
+            snapshot['bid_prices'] = self.bid_prices[:levels]
+            snapshot['bid_volumes'] = self.bid_volumes[:levels]
+            snapshot['ask_price'] = self.ask_prices[:levels]
+            snapshot['ask_volumes'] = self.ask_volumes[:levels]
+        else:
+            snapshot = self.bid_prices[:levels] + self.bid_volumes[:levels] + self.ask_prices[:levels] + self.ask_volumes[:levels]
+        return snapshot
 
     def __repr__(self) -> str:
         return f"Instrument Code: {self.code}" +\

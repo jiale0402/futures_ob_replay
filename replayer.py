@@ -2,16 +2,19 @@ import os
 import io
 import gzip
 import datetime
+import copy
+
 import polars as pl
 import orjson as json
+from concurrent.futures import ProcessPoolExecutor, as_completed
+
 from data_schema import L2_SCHEMA, L1_SCHEMA
 from orderbook import LocalOrderBook
-import copy
 from trades import TradesHandler
-from concurrent.futures import ProcessPoolExecutor, as_completed
 from feature_func import all_feature_funcs, all_features
 from handlers import *
-        
+
+
 class Replayer:
 
     def __init__(
@@ -49,14 +52,14 @@ class Replayer:
         self.freq = frequency
         self.l2_col_mapping = None
         self.universe = universe
-        self.ob_container = dict()
+        self.ob_container = dict() # {instrument: {layerID: LocalOrderBook}}
         self.dest = dest
         self.buffer_size = buffer_size
         os.makedirs(self.dest, exist_ok=True)
         self.blank_update_template = {k:[] for k in L2_SCHEMA.keys()}
         self.blank_trade_template = {k:[] for k in L1_SCHEMA.keys()}
         self.max_workers = max_workers
-        self.last_data = []
+        self.carry_over = []
 
     def close(self):
         for dest in self.dest_file_streams.values():
@@ -69,7 +72,7 @@ class Replayer:
         self._read_next_date()
         with ProcessPoolExecutor(max_workers=self.max_workers) as pool:
             rs = []
-            for last, code in zip(self.last_data, self.universe):
+            for carry_over, code in zip(self.carry_over, self.universe):
                 rs += [pool.submit(
                     _compute_day,
                     self.curr_data['l2'][code],
@@ -80,14 +83,14 @@ class Replayer:
                     self.trade_handler_container[code],
                     self.dest_file_streams[code],
                     self.buffer_size,
-                    last
+                    carry_over
                 )]
 
-        self.last_data = []
+        self.carry_over = []
         # catch exceptions & print progress
         for i, future in enumerate(as_completed(rs)):
             try:
-                self.last_data += [future.result()]
+                self.carry_over += [future.result()]
                 print(f"finished {self.universe[i] + ' ' + self.date}")
             except Exception as exc:
                 print(exc)
@@ -312,7 +315,7 @@ class Replayer:
         if self.universe == []:
             self.universe = self.curr_data['l2']['Code'].unique().to_list()
             self.universe = [code for code in self.universe if code != 'blank']
-        self.last_data = [None] * len(self.universe)
+        self.carry_over = [None] * len(self.universe)
         self.blank_update_template['Code'] = copy.deepcopy(self.universe)
         self.blank_trade_template['Code'] = copy.deepcopy(self.universe)
         for key in self.blank_trade_template.keys():
@@ -321,7 +324,13 @@ class Replayer:
         for key in self.blank_update_template.keys():
             if key != 'Code':
                 self.blank_update_template[key] = [None] * len(self.universe)
-        self.ob_container = {code: LocalOrderBook(code) for code in self.universe}
+        self.ob_container = {
+            code: {
+                str(layer): LocalOrderBook(code) 
+                for layer in range(6)
+            } 
+            for code in self.universe
+        }
         self.trade_handler_container = {code: TradesHandler(code, self.freq) for code in self.universe}
         self.time = datetime.datetime.strptime(self.date, "%Y-%m-%d") - datetime.timedelta(hours=2)
         self.dest_file_streams = {
