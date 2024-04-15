@@ -12,10 +12,7 @@ from data_schema import L2_SCHEMA, L1_SCHEMA
 from orderbook import LocalOrderBook
 from trades import TradesHandler
 from feature_func import all_feature_funcs, all_features
-from handlers import (
-    _compute_day,
-    
-)
+from handlers import compute_day
 
 
 class Replayer:
@@ -77,7 +74,7 @@ class Replayer:
             rs = []
             for carry_over, code in zip(self.carry_over, self.universe):
                 rs += [pool.submit(
-                    _compute_day,
+                    compute_day,
                     self.curr_data['l2'][code],
                     self.curr_data['trades'][code],
                     self.l2_col_mapping,
@@ -85,7 +82,6 @@ class Replayer:
                     self.ob_container[code],
                     self.trade_handler_container[code],
                     self.dest_file_streams[code],
-                    self.buffer_size,
                     carry_over
                 )]
 

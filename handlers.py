@@ -10,33 +10,45 @@ from orderbook import LocalOrderBook
 def _compute_day(
         l2: pl.DataFrame,
         l1: pl.DataFrame,
-        l2_col_mapping: dict,
-        l1_col_mapping: dict,
-        ob_handler: LocalOrderBook,
-        trade_handler: TradesHandler,
-    ) -> None:
+        l2_col_mapping: dict, 
+        l1_col_mapping: dict, 
+        ob_handler: LocalOrderBook, 
+        trade_handler: TradesHandler, 
+        dest: str,
+        buffer_size: int = 2**20,
+        last = None
+    ) -> None:    
+    dest = open(dest, 'a', buffering=buffer_size) 
     # replay loop
+    prev_data = last
     for (l2_updates, trades) in zip(l2.iter_rows(named = True), l1.iter_rows(named = True)):
         # assure time is uniform
         timestamp = l2_updates.pop('Timestamp')
         assert timestamp == trades.pop('Timestamp')
-
+        
         # process l2 updates
         if l2_updates['Code'] is not None:
             for row in zip(*l2_updates.values()):
                 handle_l2_update(row, l2_col_mapping, ob_handler)
-
-        # process trades
+        
+        # process trades 
         if trades['Code'] is not None:
             for row in zip(*trades.values()):
-                if row[l1_col_mapping['Code']] == 'blank':
-                    continue
                 handle_trades(row, l1_col_mapping, trade_handler)
-
+        
         # record the features
         data = ob_handler.take_snapshot()
         data += trade_handler.get_ohlcva()
-    return data, timestamp
+        data += [f(
+                    data=data, 
+                    prev_data=prev_data, 
+                    vwap=trade_handler.vwap
+                ) for f in all_feature_funcs]
+        dest.write(f"{str(data)[1:-1]}, {timestamp}\n")
+        prev_data = data
+
+    dest.close()
+    return data
 
 def handle_trades(row, l1_col_mapping, trades_handler) -> None: # message handler wrapper
     price = row[l1_col_mapping['TradeEvent_LastPrice']]
