@@ -33,12 +33,12 @@ if __name__ == "__main__":
     """
     midprice = MidPrice(write=True)
     r = Replayer(
-        "/storage/quanthouse/one-mon/cme",
+        "~/sample",
         eid="1027", 
-        dest="/storage/dest",
+        dest="~/sample/output",
         frequency=datetime.timedelta(seconds=1), # 0.1s
-        start="2018-12-03", 
-        universe=['648438910']
+        start="2020-02-20", 
+        universe=None
     )
     days_to_replay = 1
     for i in range(days_to_replay):
