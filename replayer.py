@@ -12,7 +12,10 @@ from data_schema import L2_SCHEMA, L1_SCHEMA
 from orderbook import LocalOrderBook
 from trades import TradesHandler
 from feature_func import all_feature_funcs, all_features
-from handlers import *
+from handlers import (
+    _compute_day,
+    
+)
 
 
 class Replayer:

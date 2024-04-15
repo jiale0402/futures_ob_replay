@@ -7,13 +7,12 @@ import orjson as json
 from trades import TradesHandler
 from orderbook import LocalOrderBook
 
-# separated from class to allow for parallel processing in spawned mp context
 def _compute_day(
         l2: pl.DataFrame,
         l1: pl.DataFrame,
         l2_col_mapping: dict,
         l1_col_mapping: dict,
-        ob_handlers: dict[str: LocalOrderBook],
+        ob_handler: LocalOrderBook,
         trade_handler: TradesHandler,
     ) -> None:
     # replay loop
@@ -25,7 +24,6 @@ def _compute_day(
         # process l2 updates
         if l2_updates['Code'] is not None:
             for row in zip(*l2_updates.values()):
-                ob_handler = ob_handlers[row['LayerId']]
                 handle_l2_update(row, l2_col_mapping, ob_handler)
 
         # process trades
