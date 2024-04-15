@@ -336,7 +336,7 @@ class Replayer:
         print(f"universe: {list(self.dest_file_streams.keys())}")
         orderbook_cols = [f'bid_price_{i}' for i in range(10)] + [f'bid_qty_{i}' for i in range(10)] +\
                      [f'ask_price_{i}' for i in range(10)] + [f'ask_qty_{i}' for i in range(10)]
-        orderbooks = [f"layer_{i}_{col}" for col in orderbook_cols for layer in range(6)]
+        orderbooks = [f"layer_{layer}_{col}" for col in orderbook_cols for layer in range(6)]
         features = orderbooks + ['open', 'high', 'low', 'close', 'volume', 'amount'] +\
                    all_features + ['timestamp']
         features = ', '.join(features)
