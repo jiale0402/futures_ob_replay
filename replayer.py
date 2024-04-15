@@ -101,19 +101,19 @@ class Replayer:
             self.date = self.dates.pop(0)
         except:
             raise ValueError("No more data to be replayed")
-        date, dir, eid = self.date, self.dir, self.eid
+        date, directory, eid = self.date, self.dir, self.eid
 
         # load l2 data
         self.curr_data.clear()
         self.curr_data['date'] = date
         self.curr_data['l2'] =  pl.read_csv(
-            gzip.open(os.path.join(dir, f"{date}_{eid}_L2.csv.gz"), 'rb').read(),
+            gzip.open(os.path.join(directory, "l2_data", f"{date}_{eid}_L2.csv.gz"), 'rb').read(),
             schema=L2_SCHEMA
         )
 
         # load l1 data
         self.curr_data['trades'] = pl.read_csv(
-            gzip.open(os.path.join(dir, "trades", f"{date}_{eid}_L1-Trades.csv.gz"), 'rb').read(),
+            gzip.open(os.path.join(directory, "l1_data", f"{date}_{eid}_L1-Trades.csv.gz"), 'rb').read(),
             schema=L1_SCHEMA
         )
 
