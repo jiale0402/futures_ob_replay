@@ -37,7 +37,7 @@ def compute_day(
                 handle_trades(row, l1_col_mapping, trade_handler)
         
         # record the features
-        data = ob_handler.take_snapshot()
+        data = [col for col in ob_container.take_snapshot() for ob_container in ob_handler.values()]
         data += trade_handler.get_ohlcva()
         data += [f(
                     data=data, 
