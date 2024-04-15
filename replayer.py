@@ -347,10 +347,10 @@ class Replayer:
             with open(dest, 'w+') as dest:
                 dest.write(f"{features}\n")
 
-    def list_dates(self, dir) -> list:
-        assert os.path.isdir(dir), f"{dir} is not a directory"
+    def list_dates(self, data_dir) -> list:
+        assert os.path.isdir(data_dir), f"{data_dir} is not a directory"
         dates = set()
-        for file in os.listdir(dir):
+        for file in os.listdir(os.path.join(data_dir, "l2_data")):
             if file.endswith(".csv.gz"):
                 dates.add(file.split('_')[0])
         self.time = datetime.datetime.strptime(min(dates), "%Y-%m-%d")
