@@ -61,10 +61,6 @@ class Replayer:
         self.max_workers = max_workers
         self.carry_over = []
 
-    def close(self):
-        for dest in self.dest_file_streams.values():
-            dest.close()
-
     def compute_day(self):
         """
         computes one day worth of features and write to destination

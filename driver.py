@@ -43,4 +43,3 @@ if __name__ == "__main__":
     days_to_replay = 1
     for i in range(days_to_replay):
         r.compute_day() # this computes one day worth of data
-    r.close()
