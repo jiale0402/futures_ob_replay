@@ -36,9 +36,9 @@ if __name__ == "__main__":
         "/home/zhaoran/sample",
         eid="1027", 
         dest="/home/zhaoran/sample/output",
-        frequency=datetime.timedelta(seconds=1), # 0.1s
-        start="2020-02-20", 
-        universe=None
+        frequency=datetime.timedelta(seconds=1),
+        start="2018-12-29", 
+        universe=["648438910"]
     )
     days_to_replay = 1
     for i in range(days_to_replay):
