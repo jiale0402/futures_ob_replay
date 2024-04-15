@@ -66,29 +66,41 @@ class Replayer:
         computes one day worth of features and write to destination
         """
         self._read_next_date()
-        with ProcessPoolExecutor(max_workers=self.max_workers) as pool:
-            rs = []
-            for carry_over, code in zip(self.carry_over, self.universe):
-                rs += [pool.submit(
-                    compute_day,
-                    self.curr_data['l2'][code],
-                    self.curr_data['trades'][code],
-                    self.l2_col_mapping,
-                    self.l1_col_mapping,
-                    self.ob_container[code],
-                    self.trade_handler_container[code],
-                    self.dest_file_streams[code],
-                    carry_over
-                )]
+        
+        for carry_over, code in zip(self.carry_over, self.universe):
+            compute_day(
+                self.curr_data['l2'][code],
+                self.curr_data['trades'][code],
+                self.l2_col_mapping,
+                self.l1_col_mapping,
+                self.ob_container[code],
+                self.trade_handler_container[code],
+                self.dest_file_streams[code],
+                carry_over
+            )
+        # with ProcessPoolExecutor(max_workers=self.max_workers) as pool:
+        #     rs = []
+        #     for carry_over, code in zip(self.carry_over, self.universe):
+        #         rs += [pool.submit(
+        #             compute_day,
+        #             self.curr_data['l2'][code],
+        #             self.curr_data['trades'][code],
+        #             self.l2_col_mapping,
+        #             self.l1_col_mapping,
+        #             self.ob_container[code],
+        #             self.trade_handler_container[code],
+        #             self.dest_file_streams[code],
+        #             carry_over
+        #         )]
 
-        self.carry_over = []
-        # catch exceptions & print progress
-        for i, future in enumerate(as_completed(rs)):
-            try:
-                self.carry_over += [future.result()]
-                print(f"finished {self.universe[i] + ' ' + self.date}")
-            except Exception as exc:
-                print(exc)
+        # self.carry_over = []
+        # # catch exceptions & print progress
+        # for i, future in enumerate(as_completed(rs)):
+        #     try:
+        #         self.carry_over += [future.result()]
+        #         print(f"finished {self.universe[i] + ' ' + self.date}")
+        #     except Exception as exc:
+        #         print(exc)
 
     def _read_next_date(self) -> None:
         # read next date's data
