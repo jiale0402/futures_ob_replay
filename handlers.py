@@ -2,10 +2,13 @@ import os
 import io
 import gzip
 import datetime
+
 import polars as pl
 import orjson as json
+
 from trades import TradesHandler
 from orderbook import LocalOrderBook
+from feature_func import all_feature_funcs
 
 def compute_day(
         l2: pl.DataFrame,
