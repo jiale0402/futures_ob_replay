@@ -7,7 +7,7 @@ import orjson as json
 from trades import TradesHandler
 from orderbook import LocalOrderBook
 
-def _compute_day(
+def compute_day(
         l2: pl.DataFrame,
         l1: pl.DataFrame,
         l2_col_mapping: dict, 
