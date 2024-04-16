@@ -1,7 +1,4 @@
-import os
-import io
-import datetime
-
+import numpy as np
 import polars as pl
 import orjson as json
 
@@ -20,7 +17,7 @@ def compute_day(
         dest: str,
         buffer_size: int = 2**20,
         last = None
-    ) -> None:    
+    ) -> tuple:    
     dest = open(dest, 'a', buffering=buffer_size) 
     # replay loop
     prev_data = last
@@ -33,7 +30,10 @@ def compute_day(
         # process l2 updates
         if l2_updates['Code'] is not None:
             for row in zip(*l2_updates.values()):
-                res = handle_l2_update(row, l2_col_mapping, ob_handler)
+                layer = row[l2_col_mapping['LayerId']]
+                if layer is None:
+                    continue
+                res = handle_l2_update(row, l2_col_mapping, ob_handler[layer])
                 # log correctness check results
                 if res is not None:
                     overlaprefresh_check_results.append(res)

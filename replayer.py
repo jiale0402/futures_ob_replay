@@ -1,17 +1,15 @@
 import os
-import io
 import datetime
 import copy
 
-import mgzip
+import pgzip
 import polars as pl
-import orjson as json
 from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from data_schema import L2_SCHEMA, L1_SCHEMA
 from orderbook import LocalOrderBook
 from trades import TradesHandler
-from feature_func import all_feature_funcs, all_features
+from feature_func import all_features
 from handlers import compute_day
 
 
@@ -66,6 +64,7 @@ class Replayer:
         computes one day worth of features and write to destination
         """
         self._read_next_date()
+        
         with ProcessPoolExecutor(max_workers=self.max_workers) as pool:
             rs = []
             for carry_over, code in zip(self.carry_over, self.universe):
@@ -86,9 +85,12 @@ class Replayer:
         # catch exceptions & print progress
         for i, future in enumerate(as_completed(rs)):
             try:
-                self.carry_over += [future.result()]
+                carry_over, accuracy = future.result()
+                print(f"finished {self.universe[i] + ' ' + self.date} with accuracy {accuracy}")
+                self.carry_over += [carry_over]
                 print(f"finished {self.universe[i] + ' ' + self.date}")
             except Exception as exc:
+                print(f"failed {self.universe[i] + ' ' + self.date}")
                 print(exc)
 
     def _read_next_date(self) -> None:
@@ -103,7 +105,7 @@ class Replayer:
         self.curr_data.clear()
         self.curr_data['date'] = date
         self.curr_data['l2'] =  pl.read_csv(
-            mgzip.open(
+            pgzip.open(
                 os.path.join(directory, "l2_data", f"{date}_{eid}_L2.csv.gz"), 'rb', 
                 thread=os.cpu_count(), 
                 blocksize=2*10**8
@@ -113,7 +115,7 @@ class Replayer:
 
         # load l1 data
         self.curr_data['trades'] = pl.read_csv(
-            mgzip.open(
+            pgzip.open(
                 os.path.join(directory, "l1_data", f"{date}_{eid}_L1-Trades.csv.gz"), 'rb', 
                 thread=os.cpu_count(), 
                 blocksize=2*10**8
@@ -203,6 +205,7 @@ class Replayer:
                     include_boundaries=True,
                     closed='left',
                 ).agg(
+                    pl.col("LayerId"),
                     pl.col('Code'),
                     pl.col('OverlapRefresh_BidChangeIndicator'),
                     pl.col('OverlapRefresh_AskChangeIndicator'),
@@ -214,6 +217,7 @@ class Replayer:
                     pl.col('DeltaRefresh_Level'),
                     pl.col('DeltaRefresh_Price'),
                 ).select(
+                    pl.col("LayerId"),
                     pl.col('Code'),
                     pl.col('OverlapRefresh_BidChangeIndicator'),
                     pl.col('OverlapRefresh_AskChangeIndicator'),
