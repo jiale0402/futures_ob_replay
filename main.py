@@ -30,7 +30,6 @@ if __name__ == "__main__":
         timestamp
 
     """
-    midprice = MidPrice(write=True)
     r = Replayer(
         "sample",
         eid="1027", 
