@@ -1,5 +1,4 @@
 from replayer import Replayer
-from features.MidPrice import MidPrice
 import datetime
 
 if __name__ == "__main__":
