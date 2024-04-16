@@ -18,7 +18,7 @@ if __name__ == "__main__":
 
         Output:
         -------
-        One csv file (in the destination directory) for each specified symbol in the universe with the following columns:
+        One csv file (in the destination directory) for each specified symbol in the universe with the following columns for each layer:
         bid_price_0 ... bid_price_9
         bid_qty_0   ... bid_qty_9
         ask_price_0 ... ask_price_9
