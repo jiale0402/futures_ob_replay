@@ -33,9 +33,9 @@ if __name__ == "__main__":
     """
     midprice = MidPrice(write=True)
     r = Replayer(
-        "/home/zhaoran/sample",
+        "sample",
         eid="1027", 
-        dest="/home/zhaoran/sample/output",
+        dest="output",
         frequency=datetime.timedelta(seconds=1),
         start="2018-12-29", 
         universe=["648495436"]
