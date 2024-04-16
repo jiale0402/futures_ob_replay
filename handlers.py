@@ -1,6 +1,5 @@
 import os
 import io
-import gzip
 import datetime
 
 import polars as pl
@@ -9,6 +8,7 @@ import orjson as json
 from trades import TradesHandler
 from orderbook import LocalOrderBook
 from feature_func import all_feature_funcs
+from check_ob import check_ob
 
 def compute_day(
         l2: pl.DataFrame,
@@ -24,6 +24,7 @@ def compute_day(
     dest = open(dest, 'a', buffering=buffer_size) 
     # replay loop
     prev_data = last
+    overlaprefresh_check_results = []
     for (l2_updates, trades) in zip(l2.iter_rows(named = True), l1.iter_rows(named = True)):
         # assure time is uniform
         timestamp = l2_updates.pop('Timestamp')
@@ -32,7 +33,10 @@ def compute_day(
         # process l2 updates
         if l2_updates['Code'] is not None:
             for row in zip(*l2_updates.values()):
-                handle_l2_update(row, l2_col_mapping, ob_handler)
+                res = handle_l2_update(row, l2_col_mapping, ob_handler)
+                # log correctness check results
+                if res is not None:
+                    overlaprefresh_check_results.append(res)
         
         # process trades 
         if trades['Code'] is not None:
@@ -51,7 +55,12 @@ def compute_day(
         prev_data = data
 
     dest.close()
-    return data
+    if len(overlaprefresh_check_results) == 0:
+        accuracy = np.nan
+    else:
+        accuracy = np.sum(overlaprefresh_check_results) / len(overlaprefresh_check_results)
+        
+    return data, accuracy
 
 def handle_trades(row, l1_col_mapping, trades_handler) -> None: # message handler wrapper
     price = row[l1_col_mapping['TradeEvent_LastPrice']]
@@ -59,16 +68,18 @@ def handle_trades(row, l1_col_mapping, trades_handler) -> None: # message handle
     trades_handler.handle_trades(price, qty)
 
 def handle_l2_update(row, l2_col_mapping, ob_handler) -> None: # message handler wrapper
+    res = None # place holder for overlap refresh reference check result
     # 1.4.4.8   OverlapRefresh
     if row[l2_col_mapping['OverlapRefresh_BidChangeIndicator']] is not None or\
        row[l2_col_mapping['OverlapRefresh_AskChangeIndicator']] is not None:
-        handle_OverlapRefresh(row, ob_handler, l2_col_mapping)
+        res = handle_OverlapRefresh(row, ob_handler, l2_col_mapping)
     # 1.4.2     DeltaRefresh
     elif row[l2_col_mapping['DeltaRefresh_DeltaAction']] is not None:
         handle_DeltaRefresh(row, ob_handler, l2_col_mapping)
     # 1.4.4.9   MBLMaxVisibleDepth
     elif row[l2_col_mapping['MaxVisibleDepth_MaxVisibleDepth']] is not None:
         handle_MBLMaxVisibleDepth(row, ob_handler, l2_col_mapping)
+    return res
 
 def handle_MBLMaxVisibleDepth(row, ob, l2_col_mapping):
     depth = row[l2_col_mapping['MaxVisibleDepth_MaxVisibleDepth']]
@@ -92,6 +103,7 @@ def handle_OverlapRefresh(row, ob, l2_col_mapping):
     ask_is_full, ask_start_level = handle_OverlapRefresh_indicator(ask_indicator)
     bid_limits = row[l2_col_mapping['OverlapRefresh_BidLimits']]
     ask_limits = row[l2_col_mapping['OverlapRefresh_AskLimits']]
+    
     if bid_limits is not None: # load bid limits (snapshot)
         if ob.bid_prices[0] is None:
             bid_start_level = 0
@@ -110,6 +122,13 @@ def handle_OverlapRefresh(row, ob, l2_col_mapping):
             ob.AskOverwriteLevel(ask_limits[i][0], ask_limits[i][1], ask_start_level+i)
         if ask_is_full:
             ob.AskClearFromLevel(i + 1)
+            
+    # this is a full snapshot, check for local ob accuracy
+    if (bid_is_full and ask_is_full) and (bid_limits and ask_limits): 
+        res = check_ob(ob, bid_limits, ask_limits)
+    else:
+        res = None
+    return res
 
 def handle_DeltaRefresh(row, ob, l2_col_mapping):
     # process a delta update
