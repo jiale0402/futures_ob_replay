@@ -65,21 +65,34 @@ class Replayer:
         """
         self._read_next_date()
         
-        with ProcessPoolExecutor(max_workers=self.max_workers) as pool:
-            rs = []
-            for carry_over, code in zip(self.carry_over, self.universe):
-                rs += [pool.submit(
-                    compute_day,
-                    self.curr_data['l2'][code],
-                    self.curr_data['trades'][code],
-                    self.l2_col_mapping,
-                    self.l1_col_mapping,
-                    self.ob_container[code],
-                    self.trade_handler_container[code],
-                    self.dest_file_streams[code],
-                    self.buffer_size,
-                    carry_over
-                )]
+        for carry_over, code in zip(self.carry_over, self.universe):
+            compute_day(
+                self.curr_data['l2'][code],
+                self.curr_data['trades'][code],
+                self.l2_col_mapping,
+                self.l1_col_mapping,
+                self.ob_container[code],
+                self.trade_handler_container[code],
+                self.dest_file_streams[code],
+                self.buffer_size,
+                carry_over
+            )
+        
+        # with ProcessPoolExecutor(max_workers=self.max_workers) as pool:
+        #     rs = []
+        #     for carry_over, code in zip(self.carry_over, self.universe):
+        #         rs += [pool.submit(
+        #             compute_day,
+        #             self.curr_data['l2'][code],
+        #             self.curr_data['trades'][code],
+        #             self.l2_col_mapping,
+        #             self.l1_col_mapping,
+        #             self.ob_container[code],
+        #             self.trade_handler_container[code],
+        #             self.dest_file_streams[code],
+        #             self.buffer_size,
+        #             carry_over
+        #         )]
 
         self.carry_over = []
         # catch exceptions & print progress

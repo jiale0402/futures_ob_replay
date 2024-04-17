@@ -1,4 +1,5 @@
 def check_ob(ob_handler, bid_limits, ask_limits):
+    print(bid_limits, ask_limits)
     consistent = True 
     local_ob_bid_prices = ob_handler.bid_prices
     local_ob_bid_volumes = ob_handler.bid_volumes
