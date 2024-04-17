@@ -35,8 +35,8 @@ def compute_day(
                     continue
                 res = handle_l2_update(row, l2_col_mapping, ob_handler[layer])
                 # log correctness check results
-                if res is not None:
-                    overlaprefresh_check_results.append(res)
+                if res is not None and layer == "0":
+                    overlaprefresh_check_results.append((res, timestamp, layer, bid_limits, ask_limits, ob_handler[layer].take_snapshot()))
         
         # process trades 
         if trades['Code'] is not None:

@@ -105,13 +105,18 @@ class Replayer:
         self.curr_data.clear()
         self.curr_data['date'] = date
         self.curr_data['l2'] =  pl.read_csv(
-            pgzip.open(
-                os.path.join(directory, "l2_data", f"{date}_{eid}_L2.csv.gz"), 'rb', 
-                thread=os.cpu_count(), 
-                blocksize=2*10**8
-            ).read(),
-            schema=L2_SCHEMA
+            os.path.join(directory, "l2_data", f"{date}_{eid}_L2.csv"),
+            schema=L2_SCHEMA,
+            low_memory=True,
         )
+        # self.curr_data['l2'] =  pl.read_csv(
+        #     pgzip.open(
+        #         os.path.join(directory, "l2_data", f"{date}_{eid}_L2.csv.gz"), 'rb', 
+        #         thread=os.cpu_count(), 
+        #         blocksize=2*10**8
+        #     ).read(),
+        #     schema=L2_SCHEMA
+        # )
 
         # load l1 data
         self.curr_data['trades'] = pl.read_csv(
