@@ -5,7 +5,9 @@ import sys
 if __name__ == "__main__":
     """
 
-        Replayer: main thread of the feature generation process
+        Main thread of the feature generation process
+        
+        Usage:          python main.py <source> <destination>
 
         Params:
         -------
@@ -31,19 +33,14 @@ if __name__ == "__main__":
         timestamp
 
     """
-    try:
-        r = Replayer(
-            src=sys.argv[1],
-            eid="1027", 
-            dest=sys.argv[2],
-            frequency=datetime.timedelta(seconds=1),
-            start="2020-12-31", 
-            universe=["682117505"]
-        )
-        days_to_replay = 1
-        for i in range(days_to_replay):
-            r.compute_day() # this computes one day worth of data
-    except Exception as e:
-        print(f"Error: {e}")
-        print("Usage: python main.py <source> <destination>")
-        sys.exit(1)
+    r = Replayer(
+        src=sys.argv[1],
+        eid="1027", 
+        dest=sys.argv[2],
+        frequency=datetime.timedelta(seconds=1),
+        start="2020-12-31", 
+        universe=["682117505"]
+    )
+    days_to_replay = 1
+    for i in range(days_to_replay):
+        r.compute_day() # this computes one day worth of data
