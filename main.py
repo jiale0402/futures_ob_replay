@@ -33,9 +33,9 @@ if __name__ == "__main__":
     """
     try:
         r = Replayer(
-            src=sys.argv[0],
+            src=sys.argv[1],
             eid="1027", 
-            dest=sys.argv[1],
+            dest=sys.argv[2],
             frequency=datetime.timedelta(seconds=1),
             start="2020-12-31", 
             universe=["682117505"]
