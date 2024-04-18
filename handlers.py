@@ -76,6 +76,7 @@ def handle_trades(row, l1_col_mapping, trades_handler) -> None: # message handle
 def handle_l2_update(row, l2_col_mapping, ob_handler) -> None: # message handler wrapper
     res = None # place holder for overlap refresh reference check result
     # 1.4.4.8   OverlapRefresh
+    bid_limits, ask_limits = None, None
     if row[l2_col_mapping['OverlapRefresh_BidChangeIndicator']] is not None or\
        row[l2_col_mapping['OverlapRefresh_AskChangeIndicator']] is not None:
         res, bid_limits, ask_limits = handle_OverlapRefresh(row, ob_handler, l2_col_mapping)
