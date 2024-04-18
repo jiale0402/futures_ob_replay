@@ -66,7 +66,7 @@ class Replayer:
         self._read_next_date()
         
         for carry_over, code in zip(self.carry_over, self.universe):
-            compute_day(
+            accuracy = compute_day(
                 self.curr_data['l2'][code],
                 self.curr_data['trades'][code],
                 self.l2_col_mapping,
@@ -77,6 +77,7 @@ class Replayer:
                 self.buffer_size,
                 carry_over
             )
+            print(f"finished {code + ' ' + self.date} with accuracy {accuracy}")
         
         # with ProcessPoolExecutor(max_workers=self.max_workers) as pool:
         #     rs = []
@@ -96,15 +97,15 @@ class Replayer:
 
         self.carry_over = []
         # catch exceptions & print progress
-        for i, future in enumerate(as_completed(rs)):
-            try:
-                carry_over, accuracy = future.result()
-                print(f"finished {self.universe[i] + ' ' + self.date} with accuracy {accuracy}")
-                self.carry_over += [carry_over]
-                print(f"finished {self.universe[i] + ' ' + self.date}")
-            except Exception as exc:
-                print(f"failed {self.universe[i] + ' ' + self.date}")
-                print(exc)
+        # for i, future in enumerate(as_completed(rs)):
+        #     try:
+        #         carry_over, accuracy = future.result()
+        #         print(f"finished {self.universe[i] + ' ' + self.date} with accuracy {accuracy}")
+        #         self.carry_over += [carry_over]
+        #         print(f"finished {self.universe[i] + ' ' + self.date}")
+        #     except Exception as exc:
+        #         print(f"failed {self.universe[i] + ' ' + self.date}")
+        #         print(exc)
 
     def _read_next_date(self) -> None:
         # read next date's data

@@ -39,7 +39,7 @@ if __name__ == "__main__":
         dest=sys.argv[2],
         frequency=datetime.timedelta(seconds=1),
         start="2020-12-31", 
-        universe=["682117505"]
+        universe=["648799647"]
     )
     days_to_replay = 1
     for i in range(days_to_replay):

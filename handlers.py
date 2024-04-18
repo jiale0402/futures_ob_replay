@@ -60,9 +60,9 @@ def compute_day(
     else:
         r = []
         for res, timestamp, layer, bid_limits, ask_limits, snapshot in overlaprefresh_check_results:
-            print(f"OverlapRefresh check failed at {timestamp} in layer {layer}")
-            print(f"bid_limits {bid_limits} and ask_limits {ask_limits}")
-            print(f"Snapshot: {snapshot}")
+            # print(f"OverlapRefresh check failed at {timestamp} in layer {layer}")
+            # print(f"bid_limits {bid_limits} and ask_limits {ask_limits}")
+            # print(f"Snapshot: {snapshot}")
             r.append(res)
         accuracy = np.sum(r) / len(r)
         
