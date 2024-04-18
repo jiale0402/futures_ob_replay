@@ -33,7 +33,7 @@ def compute_day(
                 layer = row[l2_col_mapping['LayerId']]
                 if layer is None:
                     continue
-                res = handle_l2_update(row, l2_col_mapping, ob_handler[layer])
+                res, bid_limits, ask_limits = handle_l2_update(row, l2_col_mapping, ob_handler[layer])
                 # log correctness check results
                 if res is not None and layer == "0":
                     overlaprefresh_check_results.append((res, timestamp, layer, bid_limits, ask_limits, ob_handler[layer].take_snapshot()))
@@ -78,14 +78,14 @@ def handle_l2_update(row, l2_col_mapping, ob_handler) -> None: # message handler
     # 1.4.4.8   OverlapRefresh
     if row[l2_col_mapping['OverlapRefresh_BidChangeIndicator']] is not None or\
        row[l2_col_mapping['OverlapRefresh_AskChangeIndicator']] is not None:
-        res = handle_OverlapRefresh(row, ob_handler, l2_col_mapping)
+        res, bid_limits, ask_limits = handle_OverlapRefresh(row, ob_handler, l2_col_mapping)
     # 1.4.2     DeltaRefresh
     elif row[l2_col_mapping['DeltaRefresh_DeltaAction']] is not None:
         handle_DeltaRefresh(row, ob_handler, l2_col_mapping)
     # 1.4.4.9   MBLMaxVisibleDepth
     elif row[l2_col_mapping['MaxVisibleDepth_MaxVisibleDepth']] is not None:
         handle_MBLMaxVisibleDepth(row, ob_handler, l2_col_mapping)
-    return res
+    return res, bid_limits, ask_limits
 
 def handle_MBLMaxVisibleDepth(row, ob, l2_col_mapping):
     depth = row[l2_col_mapping['MaxVisibleDepth_MaxVisibleDepth']]
@@ -134,7 +134,7 @@ def handle_OverlapRefresh(row, ob, l2_col_mapping):
         res = check_ob(ob, bid_limits, ask_limits)
     else:
         res = None
-    return res
+    return res, bid_limits, ask_limits
 
 def handle_DeltaRefresh(row, ob, l2_col_mapping):
     # process a delta update
