@@ -66,7 +66,7 @@ class Replayer:
         self._read_next_date()
         
         for carry_over, code in zip(self.carry_over, self.universe):
-            accuracy = compute_day(
+            carry_over, accuracy = compute_day(
                 self.curr_data['l2'][code],
                 self.curr_data['trades'][code],
                 self.l2_col_mapping,
