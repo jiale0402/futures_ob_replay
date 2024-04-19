@@ -64,7 +64,7 @@ class Replayer:
         computes one day worth of features and write to destination
         """
         self._read_next_date()
-        
+        all_carry_over = []
         for carry_over, code in zip(self.carry_over, self.universe):
             carry_over, accuracy = compute_day(
                 self.curr_data['l2'][code],
@@ -78,7 +78,9 @@ class Replayer:
                 carry_over
             )
             print(f"finished {code + ' ' + self.date} with accuracy {accuracy}")
-        
+            all_carry_over.append(carry_over)
+
+        self.carry_over = all_carry_over
         # with ProcessPoolExecutor(max_workers=self.max_workers) as pool:
         #     rs = []
         #     for carry_over, code in zip(self.carry_over, self.universe):
@@ -95,7 +97,6 @@ class Replayer:
         #             carry_over
         #         )]
 
-        self.carry_over = []
         # catch exceptions & print progress
         # for i, future in enumerate(as_completed(rs)):
         #     try:
