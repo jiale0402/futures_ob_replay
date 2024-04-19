@@ -7,7 +7,7 @@ if __name__ == "__main__":
 
         Main thread of the feature generation process
         
-        Usage:          python main.py <source> <destination>
+        Usage:          python main.py <source> <destination> <days_to_replay>
 
         Params:
         -------
@@ -41,6 +41,6 @@ if __name__ == "__main__":
         start="2020-12-31", 
         universe=["648799647"]
     )
-    days_to_replay = 1
+    days_to_replay = int(sys.argv[3])
     for i in range(days_to_replay):
         r.compute_day() # this computes one day worth of data
