@@ -379,7 +379,7 @@ class Replayer:
         assert os.path.isdir(data_dir), f"{data_dir} is not a directory"
         dates = set()
         for file in os.listdir(os.path.join(data_dir, "l2_data")):
-            if file.endswith(".csv.gz"):
+            if file.endswith(".csv.gz") or file.endswith(".csv"):
                 dates.add(file.split('_')[0])
         self.time = datetime.datetime.strptime(min(dates), "%Y-%m-%d")
         dates = sorted(list(dates))
