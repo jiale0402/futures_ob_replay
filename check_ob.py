@@ -12,7 +12,9 @@ def check_ob(ob_handler, bid_limits, ask_limits, timestamp):
         bid_volume_diff = local_ob_bid_volumes[i] - bid_limits[i][1]
         if abs(bid_price_diff) > 1e-3 or abs(bid_volume_diff) > 1e-3:
             consistent = False
-            msg = f"Timestamp: {timestamp}, Mismatch at Level {i}: bid_price_diff: {abs(bid_price_diff)}, bid_volume_diff: {abs(bid_volume_diff)}, reference bid_limits: {bid_limits}, snapshot: {ob_handler.take_snapshot()}"
+            msg = f"Timestamp: {timestamp}, Bid mismatch at Level {i}: bid_price_diff: {abs(bid_price_diff)},\
+                    bid_volume_diff: {abs(bid_volume_diff)}, reference bid_limits: {bid_limits},\
+                    local bid snapshot: {ob_handler.take_snapshot()[0:20]}"
             print(msg)
             break
     for i in range(len(ask_limits)):
@@ -20,7 +22,9 @@ def check_ob(ob_handler, bid_limits, ask_limits, timestamp):
         ask_volume_diff = local_ob_ask_volumes[i] - ask_limits[i][1]
         if abs(ask_price_diff) > 1e-3 or abs(ask_volume_diff) > 1e-3:
             consistent = False
-            msg = f"Timestamp: {timestamp}, Mismatch at Level {i}: ask_price_diff: {abs(ask_price_diff)}, ask_volume_diff: {abs(ask_volume_diff)}, reference ask_limits: {ask_limits}, snapshot: {ob_handler.take_snapshot()}"
+            msg = f"Timestamp: {timestamp}, Ask mismatch at Level {i}: ask_price_diff: {abs(ask_price_diff)},\
+                    ask_volume_diff: {abs(ask_volume_diff)}, reference ask_limits: {ask_limits},\
+                    local ask snapshot: {ob_handler.take_snapshot()[20:40]}"
             print(msg)
             break
     return consistent
