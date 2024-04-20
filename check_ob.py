@@ -6,7 +6,7 @@ def check_ob(ob_handler, bid_limits, ask_limits, timestamp):
     local_ob_bid_volumes = ob_handler.bid_volumes
     local_ob_ask_prices = ob_handler.ask_prices
     local_ob_ask_volumes = ob_handler.ask_volumes    
-    timestamp = timestamp.strftime()
+    timestamp = timestamp.strftime("%Y-%m-%d %H:%M:%S.%f")
     for i in range(len(bid_limits)):
         bid_price_diff = local_ob_bid_prices[i] - bid_limits[i][0]
         bid_volume_diff = local_ob_bid_volumes[i] - bid_limits[i][1]
