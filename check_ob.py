@@ -14,7 +14,7 @@ def check_ob(ob_handler, bid_limits, ask_limits, timestamp):
         if abs(bid_price_diff) > 1e-3 or abs(bid_volume_diff) > 1e-3 \
             or abs(ask_price_diff) > 1e-3 or abs(ask_volume_diff) > 1e-3:
             consistent = False
-            timestamp = str(datetime(datetime))
+            timestamp = str(datetime(timestamp))
             msg = f"Timestamp: {timestamp}, Mismatch at Level {i}: bid_price_diff: {abs(bid_price_diff)}, ask_price_diff: {abs(ask_price_diff)}, bid_volume_diff: {abs(bid_volume_diff)}, ask_volume_diff: {abs(ask_volume_diff)}, bidlimits: {bid_limits}, ask_limits: {ask_limits}, snapshot: {ob_handler.take_snapshot()}"
             print(msg)
             break
