@@ -1,4 +1,6 @@
-def check_ob(ob_handler, bid_limits, ask_limits):
+from datetime import datetime
+
+def check_ob(ob_handler, bid_limits, ask_limits, timestamp):
     consistent = True 
     local_ob_bid_prices = ob_handler.bid_prices
     local_ob_bid_volumes = ob_handler.bid_volumes
@@ -12,8 +14,9 @@ def check_ob(ob_handler, bid_limits, ask_limits):
         if abs(bid_price_diff) > 1e-3 or abs(bid_volume_diff) > 1e-3 \
             or abs(ask_price_diff) > 1e-3 or abs(ask_volume_diff) > 1e-3:
             consistent = False
-            msg = f"Mismatch at Level {i}: bid_price_diff: {abs(bid_price_diff)}, ask_price_diff: {abs(ask_price_diff)}, bid_volume_diff: {abs(bid_volume_diff)}, ask_volume_diff: {abs(ask_volume_diff)}, bidlimits: {bid_limits}, ask_limits: {ask_limits}, snapshot: {ob_handler.take_snapshot()}"
+            timestamp = str(datetime(datetime))
+            msg = f"Timestamp: {timestamp}, Mismatch at Level {i}: bid_price_diff: {abs(bid_price_diff)}, ask_price_diff: {abs(ask_price_diff)}, bid_volume_diff: {abs(bid_volume_diff)}, ask_volume_diff: {abs(ask_volume_diff)}, bidlimits: {bid_limits}, ask_limits: {ask_limits}, snapshot: {ob_handler.take_snapshot()}"
             print(msg)
             break
     return consistent
-        
+    
