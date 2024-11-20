@@ -38,7 +38,7 @@ if __name__ == "__main__":
         eid="1027", 
         dest=sys.argv[2],
         frequency=datetime.timedelta(seconds=1),
-        start="2020-12-31", 
+        start="2020-12-01", 
         universe=["648799647"]
     )
     days_to_replay = int(sys.argv[3])
