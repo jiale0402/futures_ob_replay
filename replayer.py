@@ -65,48 +65,36 @@ class Replayer:
         """
         self._read_next_date()
         all_carry_over = []
-        for carry_over, code in zip(self.carry_over, self.universe):
-            carry_over, accuracy = compute_day(
-                self.curr_data['l2'][code],
-                self.curr_data['trades'][code],
-                self.l2_col_mapping,
-                self.l1_col_mapping,
-                self.ob_container[code],
-                self.trade_handler_container[code],
-                self.dest_file_streams[code],
-                self.buffer_size,
-                carry_over
-            )
-            print(f"finished {code + ' ' + self.date} with accuracy {accuracy}")
-            all_carry_over.append(carry_over)
 
-        self.carry_over = all_carry_over
-        # with ProcessPoolExecutor(max_workers=self.max_workers) as pool:
-        #     rs = []
-        #     for carry_over, code in zip(self.carry_over, self.universe):
-        #         rs += [pool.submit(
-        #             compute_day,
-        #             self.curr_data['l2'][code],
-        #             self.curr_data['trades'][code],
-        #             self.l2_col_mapping,
-        #             self.l1_col_mapping,
-        #             self.ob_container[code],
-        #             self.trade_handler_container[code],
-        #             self.dest_file_streams[code],
-        #             self.buffer_size,
-        #             carry_over
-        #         )]
+        with ProcessPoolExecutor(max_workers=self.max_workers) as pool:
+            rs = []
+            for carry_over, code in zip(self.carry_over, self.universe):
+                rs += [pool.submit(
+                    compute_day,
+                    self.curr_data['l2'][code],
+                    self.curr_data['trades'][code],
+                    self.l2_col_mapping,
+                    self.l1_col_mapping,
+                    self.ob_container[code],
+                    self.trade_handler_container[code],
+                    self.dest_file_streams[code],
+                    self.buffer_size,
+                    carry_over
+                )]
 
         # catch exceptions & print progress
-        # for i, future in enumerate(as_completed(rs)):
-        #     try:
-        #         carry_over, accuracy = future.result()
-        #         print(f"finished {self.universe[i] + ' ' + self.date} with accuracy {accuracy}")
-        #         self.carry_over += [carry_over]
-        #         print(f"finished {self.universe[i] + ' ' + self.date}")
-        #     except Exception as exc:
-        #         print(f"failed {self.universe[i] + ' ' + self.date}")
-        #         print(exc)
+        for i, future in enumerate(as_completed(rs)):
+            try:
+                carry_over, accuracy = future.result()
+                print(f"finished {self.universe[i] + ' ' + self.date} with accuracy {accuracy}")
+                allcarry_over += [carry_over]
+                print(f"finished {self.universe[i] + ' ' + self.date}")
+            except Exception as exc:
+                print(f"failed {self.universe[i] + ' ' + self.date}")
+                print(exc)
+
+        self.carry_over = all_carry_over
+
 
     def _read_next_date(self) -> None:
         # read next date's data
@@ -120,7 +108,7 @@ class Replayer:
         self.curr_data.clear()
         self.curr_data['date'] = date
         self.curr_data['l2'] =  pl.read_csv(
-            os.path.join(directory, "l2_data", f"{date}_{eid}_L2.csv"),
+            os.path.join(directory, "l2_data", f"{date}_{eid}_L2.csv.gz"),
             schema=L2_SCHEMA,
             low_memory=True,
         )
@@ -380,7 +368,7 @@ class Replayer:
         assert os.path.isdir(data_dir), f"{data_dir} is not a directory"
         dates = set()
         for file in os.listdir(os.path.join(data_dir, "l2_data")):
-            if file.endswith(".csv.gz") or file.endswith(".csv"):
+            if file.endswith(".csv.gz") or file.endswith(".csv.gz"):
                 dates.add(file.split('_')[0])
         self.time = datetime.datetime.strptime(min(dates), "%Y-%m-%d")
         dates = sorted(list(dates))
