@@ -1,7 +1,6 @@
 import os
 import datetime
 import copy
-import pgzip
 import polars as pl
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from data_schema import L2_SCHEMA, L1_SCHEMA
@@ -85,7 +84,7 @@ class Replayer:
             try:
                 carry_over, accuracy = future.result()
                 print(f"finished {self.universe[i] + ' ' + self.date} with accuracy {accuracy}")
-                allcarry_over += [carry_over]
+                all_carry_over += [carry_over]
                 print(f"finished {self.universe[i] + ' ' + self.date}")
             except Exception as exc:
                 print(f"failed {self.universe[i] + ' ' + self.date}")
