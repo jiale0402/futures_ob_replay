@@ -34,14 +34,14 @@ if __name__ == "__main__":
         timestamp
 
     """
-    mp.set_start_method("spawn")
+    mp.set_start_method("forkserver")
     r = Replayer(
         src=sys.argv[1],
         eid="1027", 
         dest=sys.argv[2],
         frequency=datetime.timedelta(seconds=1),
         start="2020-12-01", 
-        universe=["648799647"]
+        universe=["648799570"]
     )
     days_to_replay = int(sys.argv[3])
     for i in range(days_to_replay):
