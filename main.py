@@ -1,6 +1,7 @@
 from replayer import Replayer
 import datetime
 import sys 
+import multiprocessing as mp
 
 if __name__ == "__main__":
     """
@@ -33,6 +34,7 @@ if __name__ == "__main__":
         timestamp
 
     """
+    mp.set_start_method("spawn")
     r = Replayer(
         src=sys.argv[1],
         eid="1027", 
