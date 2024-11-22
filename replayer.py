@@ -1,18 +1,3 @@
-import os
-import datetime
-import copy
-
-import pgzip
-import polars as pl
-from concurrent.futures import ProcessPoolExecutor, as_completed
-
-from data_schema import L2_SCHEMA, L1_SCHEMA
-from orderbook import LocalOrderBook
-from trades import TradesHandler
-from feature_func import all_features
-from handlers import compute_day
-
-
 class Replayer:
 
     def __init__(
@@ -182,7 +167,7 @@ class Replayer:
         msg = f"l2 and l1 dataframes have different max timestamps: {self.curr_data['l2']['Timestamp'].max()},\
                 {self.curr_data['trades']['Timestamp'].max()}"
         assert self.curr_data['l2']['Timestamp'].max() == self.curr_data['trades']['Timestamp'].max()\
-                == self.time + datetime.timedelta(hours=24) - self.freq / 2, msg
+                == self.time + datetime.timedelta(hours=24) - self.freq / 100, msg
 
 
         # partition all data by instrument for parallel processing
@@ -192,12 +177,20 @@ class Replayer:
             include_key=True,
             as_dict=True
         )
+        self.curr_data['l2'] = {
+            code[0]: data
+            for code, data in self.curr_data["l2"].items()
+        }
         self.curr_data['trades'] = self.curr_data['trades'].partition_by(
             by='Code',
             maintain_order=True,
             include_key=True,
             as_dict=True
         )
+        self.curr_data["trades"] = {
+            code[0]: data
+            for code, data in self.curr_data["trades"].items()
+        }
 
         print(f"finished partitioning by instrument code for {self.date}")
 
@@ -278,7 +271,7 @@ class Replayer:
         ).filter(
             pl.col('Timestamp') < self.time + datetime.timedelta(days=1)
         )
-        eod_time = [self.time + datetime.timedelta(days=1) - self.freq/2]
+        eod_time = [self.time + datetime.timedelta(days=1) - self.freq/100]
         blank_trade['Timestamp'] = eod_time * len(self.universe)
         blank_update['Timestamp'] = eod_time * len(self.universe)
         self.curr_data['trades'] = pl.concat([
@@ -356,7 +349,7 @@ class Replayer:
         orderbooks = [f"layer_{layer}_{col}" for col in orderbook_cols for layer in range(6)]
         features = orderbooks + ['open', 'high', 'low', 'close', 'volume', 'amount'] +\
                    all_features + ['timestamp']
-        features = ', '.join(features)
+        features = ','.join(features)
         for dest in self.dest_file_streams.values():
             with open(dest, 'w+') as dest:
                 dest.write(f"{features}\n")
